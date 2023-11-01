@@ -1,0 +1,53 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                            String          @id @default(uuid())
+  name                          String
+  age                           Int
+  email                         String
+  role                          Role            @default(BASIC)
+  UserPreferenceId              String?         @unique
+  Post_Post_authorIdToUser      Post[]          @relation("Post_authorIdToUser")
+  Post_Post_favoritedByIdToUser Post[]          @relation("Post_favoritedByIdToUser")
+  UserPreference                UserPreference? @relation(fields: [UserPreferenceId], references: [id])
+
+  @@unique([age, name])
+  @@index([email])
+}
+
+model Category {
+  id   String @id
+  name String @unique
+  Post Post[]
+}
+
+model Post {
+  id                            String     @id
+  title                         String
+  averageRating                 Float
+  createdAt                     DateTime   @default(now())
+  updatedAt                     DateTime
+  authorId                      String
+  favoritedById                 String?
+  User_Post_authorIdToUser      User       @relation("Post_authorIdToUser", fields: [authorId], references: [id])
+  User_Post_favoritedByIdToUser User?      @relation("Post_favoritedByIdToUser", fields: [favoritedById], references: [id])
+  Category                      Category[]
+}
+
+model UserPreference {
+  id           String  @id
+  emailUpdates Boolean
+  User         User?
+}
+
+enum Role {
+  BASIC
+  ADMIN
+}
